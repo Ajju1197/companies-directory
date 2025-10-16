@@ -14,6 +14,10 @@ const companySchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    size: {
+        type: String,
+        required: true
+    },
     description: {
         type: String,
         required: true
@@ -24,10 +28,15 @@ const companySchema = new mongoose.Schema({
     },
     website: {
         type: String,
-        required: false
+        default: ''
     }
 }, {
     timestamps: true
 });
+
+// Add index for better performance
+companySchema.index({ name: 1 });
+companySchema.index({ industry: 1 });
+companySchema.index({ location: 1 });
 
 module.exports = mongoose.model('Company', companySchema);
