@@ -9,3 +9,5 @@ services:
     envVars:
       - key: MONGO_URI
         value: "mongodb+srv://SyedAjmathulla:companydirectory@cluster0.lsq52gf.mongodb.net/companies_directory?retryWrites=true&w=majority&appName=Cluster0"
+      - key: NODE_VERSION
+        value: "20" 
