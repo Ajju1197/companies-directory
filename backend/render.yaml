@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: companies-backend
+    env: node
+    region: oregon   # or choose your preferred region
+    plan: free
+    buildCommand: npm install
+    startCommand: node server.js  # or your server entry file
+    envVars:
+      - key: MONGO_URI
+        value: "mongodb+srv://SyedAjmathulla:companydirectory@cluster0.lsq52gf.mongodb.net/companies_directory?retryWrites=true&w=majority&appName=Cluster0"
