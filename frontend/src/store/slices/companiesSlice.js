@@ -97,6 +97,9 @@ const companiesSlice = createSlice({
             state.error = null;
             state.formError = null;
         },
+        setCurrentCompany: (state, action) => {
+            state.currentCompany = action.payload;
+        },
         clearCurrentCompany: (state) => {
             state.currentCompany = null;
         }
@@ -124,7 +127,7 @@ const companiesSlice = createSlice({
 
             // Get Company Details
             .addCase(getCompany.pending, (state) => {
-                state.loading = false;
+                state.loading = true;
                 state.error = null;
             })
             .addCase(getCompany.fulfilled, (state, action) => {

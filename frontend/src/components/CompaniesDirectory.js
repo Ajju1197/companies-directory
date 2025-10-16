@@ -13,7 +13,6 @@ import {
     selectCurrentCompany
 } from '../store/selectors/companySelectors';
 import { fetchCompanies, setFilters, setPage, clearCurrentCompany } from '../store/slices/companiesSlice';
-import '../App.css';
 
 const CompaniesDirectory = () => {
     const dispatch = useDispatch();
@@ -29,18 +28,10 @@ const CompaniesDirectory = () => {
     useEffect(() => {
         dispatch(fetchCompanies(filters));
     }, [dispatch, filters]);
-    
-    const handleSearch = () => {
-        dispatch(fetchCompanies(filters));
-    };
 
-    const handleFilterChange = (newFilters) => {
-        dispatch(setFilters(newFilters));
-    };
-
-    const handlePageChange = (newPage) => {
-        dispatch(setPage(newPage));
-    };
+    const handleSearch = () => dispatch(fetchCompanies(filters));
+    const handleFilterChange = (newFilters) => dispatch(setFilters(newFilters));
+    const handlePageChange = (newPage) => dispatch(setPage(newPage));
 
     const handleAddCompany = () => {
         dispatch(clearCurrentCompany());
@@ -52,50 +43,40 @@ const CompaniesDirectory = () => {
         dispatch(clearCurrentCompany());
     };
 
-    // Auto-open form when currentCompany is set (for editing)
     useEffect(() => {
-        if (currentCompany) {
-            setIsFormOpen(true);
-        }
+        if (currentCompany) setIsFormOpen(true);
     }, [currentCompany]);
 
     if (error) {
         return (
-            <div className="min-h-screen bg-gray-50 py-8">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="text-center">
-                        <div className="bg-red-50 border border-red-200 rounded-md p-4">
-                            <h3 className="text-sm font-medium text-red-800">Error</h3>
-                            <p className="mt-1 text-sm text-red-600">{error}</p>
-                        </div>
-                    </div>
+            <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-[#0c1020] via-[#101a2e] to-[#0c1020] text-gray-200">
+                <div className="flex flex-col items-center gap-3 bg-white/5 backdrop-blur-md rounded-2xl px-10 py-8 text-center shadow-lg">
+                    <h3 className="text-lg font-semibold text-red-400">Error</h3>
+                    <p className="text-sm text-gray-400">{error}</p>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="companyMainDirectory min-h-screen bg-gray-50 py-8">
-            <div className="max-w-7lg flex gap-y-5 flex-col content-center mx-auto px-4 sm:px-6 lg:px-8">
-                {/* Header with Add Button */}
-                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
-                    <div className="text-center lg:text-left mb-6 lg:mb-0">
-                        <h1 className="text-4xl font-bold text-gray-900 text-white mb-4">
+        <div className="flex min-h-screen flex-col items-center justify-start bg-gradient-to-br from-[#0c1020] via-[#101a2e] to-[#0c1020] px-6 py-10 text-gray-100">
+            <div className="flex w-full max-w-7xl flex-col gap-10">
+                {/* Header */}
+                <div className="flex flex-col items-center justify-between gap-6 lg:flex-row">
+                    <div className="flex flex-col text-center lg:text-left">
+                        <h1 className="text-4xl font-bold text-indigo-300 drop-shadow-md">
                             Companies Directory
                         </h1>
-                        <p className="text-lg text-gray-600 text-#06B6D4 max-w-2xl"
-                        style={{
-                            color: 'var(--color-accent)',
-                        }}>
-                            Discover amazing companies across various industries and locations.
-                            Filter by your preferences to find your perfect match.
+                        <p className="text-gray-400 text-base max-w-2xl">
+                            Discover amazing companies across industries. Filter and explore your next opportunity.
                         </p>
                     </div>
+
                     <button
                         onClick={handleAddCompany}
-                        className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
+                        className="flex items-center justify-center gap-2 rounded-xl bg-indigo-500/90 px-6 py-3 text-base font-semibold text-white shadow-md transition-all duration-300 hover:bg-indigo-400/90 hover:shadow-[0_0_25px_rgba(99,102,241,0.3)] active:scale-95"
                     >
-                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                         </svg>
                         Add New Company
@@ -103,31 +84,36 @@ const CompaniesDirectory = () => {
                 </div>
 
                 {/* Filters */}
-                <CompanyFilters
-                    filters={filters}
-                    onFilterChange={handleFilterChange}
-                    totalCompanies={pagination.total}
-                    onSearch={handleSearch}
-                />
+                <div className="flex justify-center">
+                    <CompanyFilters
+                        filters={filters}
+                        onFilterChange={handleFilterChange}
+                        totalCompanies={pagination.total}
+                        onSearch={handleSearch}
+                    />
+                </div>
 
-                {/* Loading State */}
-                {loading && <LoadingSpinner />}
+                {/* Loading */}
+                {loading && (
+                    <div className="flex justify-center py-10">
+                        <LoadingSpinner />
+                    </div>
+                )}
 
                 {/* Companies Grid */}
                 {!loading && (
-                    <CompanyGrid
-                        companies={companies}
-                        pagination={pagination}
-                        onPageChange={handlePageChange}
-                        loading={loading}
-                    />
+                    <div className="flex justify-center">
+                        <CompanyGrid
+                            companies={companies}
+                            pagination={pagination}
+                            onPageChange={handlePageChange}
+                            loading={loading}
+                        />
+                    </div>
                 )}
 
-                {/* Company Form Modal */}
-                <CompanyForm
-                    isOpen={isFormOpen}
-                    onClose={handleCloseForm}
-                />
+                {/* Modal Form */}
+                <CompanyForm isOpen={isFormOpen} onClose={handleCloseForm} />
             </div>
         </div>
     );
