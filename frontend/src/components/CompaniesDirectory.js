@@ -27,7 +27,7 @@ const CompaniesDirectory = () => {
     const [isFormOpen, setIsFormOpen] = useState(false);
 
     useEffect(() => {
-        dispatch(fetchCompanies(filters));
+        dispatch(fetchCompanies());
     }, [dispatch]);
     
     const handleSearch = () => {
