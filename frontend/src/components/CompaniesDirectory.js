@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import CompanyFilters from './CompanyFilters';
 import CompanyGrid from './CompanyGrid';
@@ -9,29 +9,73 @@ import {
     selectLoading,
     selectError,
     selectFilters,
-    selectPagination,
     selectCurrentCompany
 } from '../store/selectors/companySelectors';
-import { fetchCompanies, setFilters, setPage, clearCurrentCompany } from '../store/slices/companiesSlice';
+import { fetchCompanies, setFilters, clearCurrentCompany } from '../store/slices/companiesSlice';
 
 const CompaniesDirectory = () => {
     const dispatch = useDispatch();
-    const companies = useSelector(selectCompanies);
+    const allCompanies = useSelector(selectCompanies); // Fetch all companies once
     const loading = useSelector(selectLoading);
     const error = useSelector(selectError);
     const filters = useSelector(selectFilters);
-    const pagination = useSelector(selectPagination);
     const currentCompany = useSelector(selectCurrentCompany);
 
     const [isFormOpen, setIsFormOpen] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const companiesPerPage = 6;
 
+    // Fetch once (no backend filter params)
     useEffect(() => {
-        dispatch(fetchCompanies(filters));
-    }, [dispatch, filters]);
+        dispatch(fetchCompanies());
+    }, [dispatch]);
 
-    const handleSearch = () => dispatch(fetchCompanies(filters));
-    const handleFilterChange = (newFilters) => dispatch(setFilters(newFilters));
-    const handlePageChange = (newPage) => dispatch(setPage(newPage));
+    const filteredCompanies = useMemo(() => {
+        let filtered = [...(allCompanies || [])];
+
+        if (filters.name) {
+            filtered = filtered.filter((c) =>
+                c.name.toLowerCase().includes(filters.name.toLowerCase())
+            );
+        }
+
+        if (filters.industry) {
+            filtered = filtered.filter((c) => c.industry === filters.industry);
+        }
+
+        if (filters.location) {
+            filtered = filtered.filter((c) => c.location === filters.location);
+        }
+
+        if (filters.size) {
+            filtered = filtered.filter((c) => c.size === filters.size);
+        }
+
+        if (filters.sort) {
+            const sortKey = filters.sort.replace('-', '');
+            const sortOrder = filters.sort.startsWith('-') ? -1 : 1;
+
+            filtered = filtered.sort((a, b) =>
+                a[sortKey] > b[sortKey] ? sortOrder : -sortOrder
+            );
+        }
+
+        return filtered;
+    }, [allCompanies, filters]);
+
+    // 📄 Pagination Logic
+    const totalPages = Math.ceil(filteredCompanies.length / companiesPerPage);
+    const startIndex = (currentPage - 1) * companiesPerPage;
+    const currentCompanies = filteredCompanies.slice(startIndex, startIndex + companiesPerPage);
+
+    const handleFilterChange = (newFilters) => {
+        dispatch(setFilters({ ...filters, ...newFilters }));
+        setCurrentPage(1); // reset pagination when filters change
+    };
+
+    const handlePageChange = (page) => {
+        if (page >= 1 && page <= totalPages) setCurrentPage(page);
+    };
 
     const handleAddCompany = () => {
         dispatch(clearCurrentCompany());
@@ -88,8 +132,7 @@ const CompaniesDirectory = () => {
                     <CompanyFilters
                         filters={filters}
                         onFilterChange={handleFilterChange}
-                        totalCompanies={pagination.total}
-                        onSearch={handleSearch}
+                        totalCompanies={filteredCompanies.length}
                     />
                 </div>
 
@@ -100,12 +143,15 @@ const CompaniesDirectory = () => {
                     </div>
                 )}
 
-                {/* Companies Grid */}
+                {/* Company Grid */}
                 {!loading && (
                     <div className="flex justify-center">
                         <CompanyGrid
-                            companies={companies}
-                            pagination={pagination}
+                            companies={currentCompanies}
+                            pagination={{
+                                currentPage,
+                                totalPages,
+                            }}
                             onPageChange={handlePageChange}
                             loading={loading}
                         />

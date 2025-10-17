@@ -129,12 +129,12 @@ const CompanyFilters = ({ filters, onFilterChange, totalCompanies, onSearch }) =
                 </div>
 
                 {/* Search Button */}
-                <button
+                {/* <button
                     onClick={onSearch}
                     className="px-5 py-2 text-sm font-medium text-white bg-teal-600 hover:bg-teal-700 rounded-md transition-colors"
                 >
                     Go
-                </button>
+                </button> */}
             </div>
         </div>
     );

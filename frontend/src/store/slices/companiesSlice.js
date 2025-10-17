@@ -1,13 +1,14 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { companyAPI } from '../../services/api';
 
-// Async thunks
+// ✅ Fetch all companies once (no filters sent to backend)
 export const fetchCompanies = createAsyncThunk(
     'companies/fetchCompanies',
-    async (filters, { rejectWithValue }) => {
+    async (_, { rejectWithValue }) => {
         try {
-            const response = await companyAPI.getCompanies(filters);
-            return response.data;
+            const response = await companyAPI.getCompanies();
+            // Assuming your backend returns an array of companies directly
+            return response.data.companies || response.data;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || 'Failed to fetch companies');
         }
@@ -73,25 +74,15 @@ const companiesSlice = createSlice({
             industry: '',
             location: '',
             size: '',
-            page: 1,
-            limit: 9,
-            sort: 'name'
-        },
-        pagination: {
-            currentPage: 1,
-            totalPages: 1,
-            total: 0
+            sort: 'name',
         },
         currentCompany: null,
         formLoading: false,
-        formError: null
+        formError: null,
     },
     reducers: {
         setFilters: (state, action) => {
-            state.filters = { ...state.filters, ...action.payload, page: 1 };
-        },
-        setPage: (state, action) => {
-            state.filters.page = action.payload;
+            state.filters = { ...state.filters, ...action.payload };
         },
         clearError: (state) => {
             state.error = null;
@@ -102,23 +93,18 @@ const companiesSlice = createSlice({
         },
         clearCurrentCompany: (state) => {
             state.currentCompany = null;
-        }
+        },
     },
     extraReducers: (builder) => {
         builder
-            // Fetch companies
+            // Fetch all companies (no pagination/filter from backend)
             .addCase(fetchCompanies.pending, (state) => {
                 state.loading = true;
                 state.error = null;
             })
             .addCase(fetchCompanies.fulfilled, (state, action) => {
                 state.loading = false;
-                state.companies = action.payload.companies;
-                state.pagination = {
-                    currentPage: action.payload.currentPage,
-                    totalPages: action.payload.totalPages,
-                    total: action.payload.total
-                };
+                state.companies = action.payload;
             })
             .addCase(fetchCompanies.rejected, (state, action) => {
                 state.loading = false;
@@ -139,7 +125,7 @@ const companiesSlice = createSlice({
                 state.error = action.payload;
             })
 
-            // Create company
+            // Create Company
             .addCase(createCompany.pending, (state) => {
                 state.formLoading = true;
                 state.formError = null;
@@ -147,48 +133,45 @@ const companiesSlice = createSlice({
             .addCase(createCompany.fulfilled, (state, action) => {
                 state.formLoading = false;
                 state.companies.unshift(action.payload);
-                state.formError = null;
             })
             .addCase(createCompany.rejected, (state, action) => {
                 state.formLoading = false;
                 state.formError = action.payload;
             })
 
-            // Update company
+            // Update Company
             .addCase(updateCompany.pending, (state) => {
                 state.formLoading = true;
                 state.formError = null;
             })
             .addCase(updateCompany.fulfilled, (state, action) => {
                 state.formLoading = false;
-                const index = state.companies.findIndex(company => company._id === action.payload._id);
+                const index = state.companies.findIndex((c) => c._id === action.payload._id);
                 if (index !== -1) {
                     state.companies[index] = action.payload;
                 }
                 state.currentCompany = null;
-                state.formError = null;
             })
             .addCase(updateCompany.rejected, (state, action) => {
                 state.formLoading = false;
                 state.formError = action.payload;
             })
 
-            // Delete company
+            // Delete Company
             .addCase(deleteCompany.fulfilled, (state, action) => {
-                state.companies = state.companies.filter(company => company._id !== action.payload);
+                state.companies = state.companies.filter((c) => c._id !== action.payload);
             })
             .addCase(deleteCompany.rejected, (state, action) => {
                 state.error = action.payload;
             });
-    }
+    },
 });
 
 export const {
     setFilters,
-    setPage,
     clearError,
     setCurrentCompany,
-    clearCurrentCompany
+    clearCurrentCompany,
 } = companiesSlice.actions;
 
 export default companiesSlice.reducer;
