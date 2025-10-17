@@ -15,7 +15,7 @@ A responsive React-based frontend application that consumes APIs and displays co
 
 - **Frontend**: React.js, Tailwind CSS, Axios
 - **Backend**: Node.js, Express.js, MongoDB, Mongoose
-- **Deployment**: Netlify (Frontend), Heroku/Railway (Backend)
+- **Deployment**: Netlify (Frontend), Render(Backend)
 
 ## 📦 Installation
 
